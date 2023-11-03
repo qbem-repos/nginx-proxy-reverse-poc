@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: proxy-manager
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    spec:
+      containers:
+        - env:
+            - name: DB_MYSQL_HOST
+              value: "10.0.24.62"
+            - name: DB_MYSQL_NAME
+              value: npm
+            - name: DB_MYSQL_PASSWORD
+              value: npm
+            - name: DB_MYSQL_PORT
+              value: "3306"
+            - name: DB_MYSQL_USER
+              value: npm
+          image: jc21/nginx-proxy-manager:latest
+          name: proxy-manager
+          ports:
+            - containerPort: 80
+            - containerPort: 443
+            - containerPort: 81
+          resources: {}
+          volumeMounts:
+          - mountPath: /etc/letsencrypt
+            name: proxycert
+      restartPolicy: Always
+      
+      volumes:
+        - name: proxycert
+          azureFile:
+            secretName: storage-secret
+            shareName: nginxproxycert
+            readOnly: false
+status: {}
